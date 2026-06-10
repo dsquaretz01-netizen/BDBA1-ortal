@@ -422,11 +422,11 @@
 <script>
   // ── PASSWORD ──
   const PASSWORD = 'BDBA1@2026';
-  let isAdmin = false;
+  let isAdmin = true;
 
   function toggleAdmin() {
     if (isAdmin) {
-      isAdmin = false;
+      isAdmin = true;
       document.body.classList.remove('admin-mode');
       document.getElementById('admin-btn').classList.remove('active');
       document.getElementById('admin-btn').textContent = '🔒 Admin';
