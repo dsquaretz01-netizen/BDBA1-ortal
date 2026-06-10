@@ -1,175 +1,485 @@
 <!DOCTYPE html>
-<html>
+<html lang="sw">
 <head>
-  <title>BDBA 1 Portal 2026</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BDBA1 — Business Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
   <style>
-    body { font-family: Arial; margin:0; background:#f2f2f2; }
-    header { background:#003366; color:white; padding:15px; text-align:center; }
-    section { background:white; margin:15px; padding:15px; border-radius:10px; }
-    h2 { color:#003366; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:   #0D1B2A;
+      --gold:   #C9961A;
+      --goldlt: #F0C94A;
+      --cream:  #F7F3EC;
+      --slate:  #3A4A5C;
+      --muted:  #8596A8;
+      --white:  #FFFFFF;
+      --border: #E2D9CC;
+      --red:    #E05252;
+      --blue:   #4A9FD4;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Space Grotesk', sans-serif; background: var(--cream); color: var(--navy); }
 
-    input, button {
-      padding:10px;
-      margin:5px 0;
-      width:100%;
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--navy); height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; border-bottom: 2px solid var(--gold);
+    }
+    .nav-brand { font-family: 'Lora', serif; font-weight: 600; font-size: 1.2rem; color: var(--goldlt); }
+    .nav-brand span { color: var(--white); }
+    .nav-links { display: flex; gap: 1.6rem; list-style: none; align-items: center; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: .82rem; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; transition: color .2s; }
+    .nav-links a:hover { color: var(--goldlt); }
+    #admin-btn {
+      background: none; border: 1px solid var(--gold); border-radius: 20px;
+      color: var(--gold); font-family: 'Space Grotesk', sans-serif;
+      font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+      padding: .3rem .9rem; cursor: pointer; transition: background .2s, color .2s;
+    }
+    #admin-btn:hover { background: var(--gold); color: var(--navy); }
+    #admin-btn.active { background: var(--gold); color: var(--navy); }
+
+    /* HERO */
+    .hero {
+      background: var(--navy); padding: 4.5rem 2rem 3.5rem;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 55% at 50% 0%, rgba(201,150,26,.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block; background: rgba(201,150,26,.15);
+      border: 1px solid var(--gold); color: var(--goldlt);
+      font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+      padding: .32rem .9rem; border-radius: 2rem; margin-bottom: 1.3rem;
+    }
+    .hero h1 { font-family: 'Lora', serif; font-size: clamp(2rem, 6vw, 3.6rem); color: var(--white); line-height: 1.15; margin-bottom: .7rem; }
+    .hero h1 em { color: var(--goldlt); font-style: italic; }
+    .hero p { color: var(--muted); font-size: 1rem; max-width: 500px; margin: 0 auto; line-height: 1.7; }
+
+    /* SECTIONS */
+    section { padding: 3rem 1.5rem; max-width: 1060px; margin: 0 auto; }
+    .sec-header {
+      display: flex; align-items: center; gap: .8rem;
+      margin-bottom: 1.6rem; border-bottom: 1px solid var(--border); padding-bottom: .8rem;
+    }
+    .sec-header h2 { font-family: 'Lora', serif; font-size: 1.4rem; color: var(--navy); }
+    .sec-icon { font-size: 1.3rem; }
+    .sec-header .add-btn { margin-left: auto; }
+
+    /* ADD BUTTON (admin only) */
+    .add-btn {
+      background: var(--gold); color: var(--navy);
+      border: none; border-radius: 8px;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: .82rem;
+      padding: .5rem 1.1rem; cursor: pointer; transition: background .2s;
+      display: none; /* hidden until admin unlocks */
+    }
+    .add-btn:hover { background: var(--goldlt); }
+    body.admin-mode .add-btn { display: inline-flex; align-items: center; gap: .35rem; }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center; padding: 3rem 1rem;
+      color: var(--muted); font-size: .9rem; line-height: 2;
+      border: 2px dashed var(--border); border-radius: 12px;
+    }
+    .empty-state .empty-icon { font-size: 2.2rem; display: block; margin-bottom: .5rem; opacity: .5; }
+
+    /* NOTICE CARDS */
+    .notice-list { display: flex; flex-direction: column; gap: .9rem; }
+    .notice-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-left: 4px solid var(--gold); border-radius: 8px;
+      padding: 1rem 1.2rem; display: flex; align-items: flex-start; gap: .9rem;
+      transition: box-shadow .2s; position: relative;
+    }
+    .notice-card:hover { box-shadow: 0 4px 18px rgba(13,27,42,.08); }
+    .n-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gold); flex-shrink: 0; margin-top: .38rem; }
+    .n-dot.urgent { background: var(--red); }
+    .n-dot.info   { background: var(--blue); }
+    .notice-card.urgent { border-left-color: var(--red); }
+    .notice-card.info   { border-left-color: var(--blue); }
+    .n-title { font-weight: 600; font-size: .92rem; margin-bottom: .2rem; }
+    .n-meta  { font-size: .76rem; color: var(--muted); }
+    .del-btn {
+      position: absolute; top: .6rem; right: .7rem;
+      background: none; border: none; color: var(--muted);
+      font-size: 1rem; cursor: pointer; display: none;
+      transition: color .2s;
+    }
+    .del-btn:hover { color: var(--red); }
+    body.admin-mode .del-btn { display: block; }
+
+    /* DOCUMENTS */
+    .doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px,1fr)); gap: 1rem; }
+    .doc-card {
+      background: var(--white); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1.1rem; display: flex; flex-direction: column; gap: .45rem;
+      text-decoration: none; color: inherit; transition: transform .2s, box-shadow .2s;
+      position: relative;
+    }
+    .doc-card:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(13,27,42,.1); }
+    .doc-ico { width: 42px; height: 42px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+    .doc-ico.pdf  { background: #FEE2E2; }
+    .doc-ico.ppt  { background: #FEF3C7; }
+    .doc-ico.word { background: #DBEAFE; }
+    .doc-ico.other{ background: #D1FAE5; }
+    .doc-name { font-weight: 600; font-size: .88rem; line-height: 1.35; }
+    .doc-size { font-size: .73rem; color: var(--muted); }
+    .doc-tag {
+      display: inline-block; font-size: .67rem; font-weight: 600;
+      padding: .18rem .5rem; border-radius: 20px;
+      background: rgba(201,150,26,.12); color: var(--gold); margin-top: auto; width: fit-content;
     }
 
-    button {
-      background:#003366;
-      color:white;
-      border:none;
-      cursor:pointer;
+    /* GALLERY */
+    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px,1fr)); gap: .8rem; }
+    .gallery-item {
+      border-radius: 10px; overflow: hidden; aspect-ratio: 4/3;
+      background: var(--slate); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; cursor: pointer; transition: transform .2s;
     }
-
-    .hidden { display:none; }
-
-    .item {
-      background:#eee;
-      padding:10px;
-      margin:5px 0;
-      border-radius:5px;
+    .gallery-item:hover { transform: scale(1.03); }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .gallery-label {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(13,27,42,.78));
+      color: #fff; font-size: .7rem; font-weight: 500;
+      padding: .8rem .55rem .35rem;
     }
+    .gallery-del {
+      position: absolute; top: .4rem; right: .4rem;
+      background: rgba(13,27,42,.65); color: #fff;
+      border: none; border-radius: 50%; width: 24px; height: 24px;
+      font-size: .75rem; cursor: pointer; display: none;
+    }
+    body.admin-mode .gallery-del { display: flex; align-items: center; justify-content: center; }
 
-    a { color:#003366; }
+    /* LINKS */
+    .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px,1fr)); gap: 1rem; }
+    .link-card {
+      background: var(--white); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1.05rem 1.2rem; text-decoration: none; color: inherit;
+      display: flex; align-items: center; gap: .85rem;
+      transition: box-shadow .2s, border-color .2s;
+    }
+    .link-card:hover { box-shadow: 0 4px 16px rgba(13,27,42,.08); border-color: var(--gold); }
+    .link-ico { width: 40px; height: 40px; border-radius: 8px; background: var(--navy); display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; }
+    .link-title { font-weight: 600; font-size: .88rem; }
+    .link-desc  { font-size: .73rem; color: var(--muted); margin-top: .12rem; }
+    .link-arrow { margin-left: auto; color: var(--muted); }
+
+    /* FOOTER */
+    footer {
+      background: var(--navy); color: var(--muted);
+      text-align: center; padding: 1.6rem 1rem;
+      font-size: .78rem; margin-top: 2rem;
+      border-top: 2px solid var(--gold);
+    }
+    footer strong { color: var(--goldlt); }
+
+    /* MODAL */
+    .overlay {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(13,27,42,.82); align-items: center; justify-content: center;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: var(--white); border-radius: 14px;
+      padding: 2rem; max-width: 460px; width: 92%;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute; top: .85rem; right: 1rem;
+      background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--muted);
+    }
+    .modal h3 { font-family: 'Lora', serif; font-size: 1.15rem; margin-bottom: 1rem; }
+    .field {
+      width: 100%; border: 1px solid var(--border); border-radius: 8px;
+      padding: .65rem .85rem; font-family: 'Space Grotesk', sans-serif;
+      font-size: .88rem; color: var(--navy); outline: none; margin-bottom: .75rem;
+    }
+    .field:focus { border-color: var(--gold); }
+    .modal-actions { display: flex; gap: .6rem; margin-top: .3rem; }
+    .btn-ok {
+      background: var(--gold); color: var(--navy); border: none; border-radius: 8px;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: .88rem;
+      padding: .6rem 1.3rem; cursor: pointer; transition: background .2s;
+    }
+    .btn-ok:hover { background: var(--goldlt); }
+    .btn-cancel {
+      background: none; border: 1.5px solid var(--border); border-radius: 8px;
+      padding: .58rem 1.1rem; font-family: 'Space Grotesk', sans-serif;
+      font-size: .88rem; cursor: pointer; color: var(--slate); transition: border-color .2s;
+    }
+    .btn-cancel:hover { border-color: var(--slate); }
+    .err { color: var(--red); font-size: .8rem; margin-top: -.4rem; margin-bottom: .6rem; display: none; }
+
+    /* TOAST */
+    #toast {
+      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+      background: var(--navy); color: var(--goldlt);
+      padding: .6rem 1.4rem; border-radius: 20px; font-size: .83rem; font-weight: 600;
+      border: 1px solid var(--gold); opacity: 0; pointer-events: none;
+      transition: opacity .3s; z-index: 999;
+    }
+    #toast.show { opacity: 1; }
+
+    @media(max-width:600px){
+      .nav-links li:not(:last-child) { display: none; }
+      .hero { padding: 3rem 1.2rem 2.5rem; }
+    }
   </style>
 </head>
-
 <body>
 
-<header>
-  <h1>BDBA 1 2026 Portal</h1>
-  <p>Information • Documents • Gallery • Links</p>
-</header>
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">BDBA<span>1</span></div>
+  <ul class="nav-links">
+    <li><a href="#taarifa">Taarifa</a></li>
+    <li><a href="#documents">Documents</a></li>
+    <li><a href="#picha">Picha</a></li>
+    <li><a href="#links">Viungo</a></li>
+    <li><button id="admin-btn" onclick="toggleAdmin()">🔒 Admin</button></li>
+  </ul>
+</nav>
 
-<!-- LOGIN -->
-<section id="loginSection">
-  <h2>🔐 Admin Login</h2>
-  <input type="password" id="pass" placeholder="Enter password">
-  <button onclick="login()">Login</button>
-  <p id="msg"></p>
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">Business Administration — Year One</div>
+  <h1>Portal ya <em>BDBA1</em></h1>
+  <p>Taarifa, nyaraka, picha na viungo muhimu — kwa wanafunzi wote wa Business 1.</p>
+</div>
+
+<!-- ══ TAARIFA ══ -->
+<section id="taarifa">
+  <div class="sec-header">
+    <span class="sec-icon">📢</span>
+    <h2>Taarifa</h2>
+    <button class="add-btn" onclick="openModal('m-notice')">+ Ongeza Taarifa</button>
+  </div>
+  <div class="notice-list" id="notice-list">
+    <div class="empty-state" id="notice-empty">
+      <span class="empty-icon">📭</span>
+      Hakuna taarifa bado. Taarifa mpya zitaonekana hapa.
+    </div>
+  </div>
 </section>
 
-<!-- ADMIN PANEL -->
-<section id="adminPanel" class="hidden">
-  <h2>⚙️ Admin Panel</h2>
-
-  <h3>➕ Add Announcement</h3>
-  <input id="annText" placeholder="Enter announcement">
-  <button onclick="addAnnouncement()">Add</button>
-
-  <h3>📄 Add Document Link</h3>
-  <input id="docText" placeholder="Document name + link">
-  <button onclick="addDoc()">Add</button>
-
-  <h3>🖼️ Add Image Link</h3>
-  <input id="imgText" placeholder="Image URL">
-  <button onclick="addImg()">Add</button>
-
-  <h3>🔗 Add Useful Link</h3>
-  <input id="linkText" placeholder="Name - URL">
-  <button onclick="addLink()">Add</button>
-
-  <button onclick="logout()">Logout</button>
+<!-- ══ DOCUMENTS ══ -->
+<section id="documents">
+  <div class="sec-header">
+    <span class="sec-icon">📁</span>
+    <h2>Documents</h2>
+    <button class="add-btn" onclick="openModal('m-doc')">+ Ongeza Document</button>
+  </div>
+  <div class="doc-grid" id="doc-grid">
+    <div class="empty-state" id="doc-empty" style="grid-column:1/-1">
+      <span class="empty-icon">📂</span>
+      Hakuna documents bado. Documents zitaonekana hapa.
+    </div>
+  </div>
 </section>
 
-<!-- CONTENT -->
-
-<section>
-  <h2>📢 Taarifa</h2>
-  <div id="announcements"></div>
+<!-- ══ PICHA ══ -->
+<section id="picha">
+  <div class="sec-header">
+    <span class="sec-icon">🖼️</span>
+    <h2>Picha</h2>
+    <button class="add-btn" onclick="openModal('m-photo')">+ Ongeza Picha</button>
+  </div>
+  <div class="gallery-grid" id="gallery-grid">
+    <div class="empty-state" id="gallery-empty" style="grid-column:1/-1">
+      <span class="empty-icon">📷</span>
+      Hakuna picha bado. Picha zitaonekana hapa.
+    </div>
+  </div>
 </section>
 
-<section>
-  <h2>📄 Documents</h2>
-  <div id="documents"></div>
+<!-- ══ VIUNGO ══ -->
+<section id="links">
+  <div class="sec-header">
+    <span class="sec-icon">🔗</span>
+    <h2>Viungo Muhimu</h2>
+  </div>
+  <div class="links-grid">
+    <a href="https://www.coursera.org" target="_blank" class="link-card">
+      <div class="link-ico">🎓</div>
+      <div>
+        <div class="link-title">Coursera</div>
+        <div class="link-desc">Kozi bure za Business na Management</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a href="https://scholar.google.com" target="_blank" class="link-card">
+      <div class="link-ico">🔍</div>
+      <div>
+        <div class="link-title">Google Scholar</div>
+        <div class="link-desc">Utafiti wa makala za kisayansi</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+    <a href="https://www.investopedia.com" target="_blank" class="link-card">
+      <div class="link-ico">💹</div>
+      <div>
+        <div class="link-title">Investopedia</div>
+        <div class="link-desc">Maneno na dhana za biashara</div>
+      </div>
+      <span class="link-arrow">↗</span>
+    </a>
+  </div>
 </section>
 
-<section>
-  <h2>🖼️ Gallery</h2>
-  <div id="gallery"></div>
-</section>
+<!-- FOOTER -->
+<footer>
+  <strong>© BDBA 1 2026</strong> — Portal ya Wanafunzi wa Business Administration Year One
+</footer>
 
-<section>
-  <h2>🔗 Links Muhimu</h2>
-  <div id="links"></div>
+<!-- TOAST -->
+<div id="toast"></div>
 
-  <a href="https://srs.irdp.ac.tz" target="_blank">IRDP SRS Login</a><br>
-  <a href="https://scholar.google.com" target="_blank">Google Scholar</a><br>
-  <a href="https://chat.openai.com" target="_blank">ChatGPT</a>
-</section>
+<!-- ══ MODALS ══ -->
+
+<!-- PASSWORD MODAL -->
+<div class="overlay" id="m-password">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('m-password')">✕</button>
+    <h3>🔐 Ingia kama Admin</h3>
+    <p style="font-size:.84rem;color:var(--muted);margin-bottom:1rem;line-height:1.6">Weka password ili uweze kuongeza na kufuta vitu.</p>
+    <input class="field" type="password" id="pw-input" placeholder="Password" onkeydown="if(event.key==='Enter')checkPassword()"/>
+    <div class="err" id="pw-err">Password si sahihi. Jaribu tena.</div>
+    <div class="modal-actions">
+      <button class="btn-ok" onclick="checkPassword()">Ingia</button>
+      <button class="btn-cancel" onclick="closeModal('m-password')">Ghairi</button>
+    </div>
+  </div>
+</div>
+
+<!-- TAARIFA MODAL -->
+<div class="overlay" id="m-notice">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('m-notice')">✕</button>
+    <h3>📢 Ongeza Taarifa Mpya</h3>
+    <input class="field" id="n-title" placeholder="Kichwa cha Taarifa *"/>
+    <input class="field" id="n-meta"  placeholder="Tarehe / Maelezo (e.g. Tarehe: 20 Juni · Ukumbi A-104)"/>
+    <select class="field" id="n-type">
+      <option value="normal">Kawaida</option>
+      <option value="urgent">🔴 Muhimu / Urgent</option>
+      <option value="info">🔵 Habari / Info</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-ok" onclick="addNotice()">Hifadhi</button>
+      <button class="btn-cancel" onclick="closeModal('m-notice')">Ghairi</button>
+    </div>
+  </div>
+</div>
+
+<!-- DOCUMENT MODAL -->
+<div class="overlay" id="m-doc">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('m-doc')">✕</button>
+    <h3>📁 Ongeza Document</h3>
+    <input class="field" id="d-name" placeholder="Jina la Document *"/>
+    <input class="field" id="d-url"  placeholder="Link (URL) ya Document"/>
+    <select class="field" id="d-type">
+      <option value="pdf">📄 PDF</option>
+      <option value="ppt">📊 PowerPoint</option>
+      <option value="word">📝 Word</option>
+      <option value="other">🗒️ Nyingine</option>
+    </select>
+    <input class="field" id="d-tag"  placeholder="Lebo (mfano: Masomo, Ratiba, Assignment)"/>
+    <div class="modal-actions">
+      <button class="btn-ok" onclick="addDoc()">Hifadhi</button>
+      <button class="btn-cancel" onclick="closeModal('m-doc')">Ghairi</button>
+    </div>
+  </div>
+</div>
+
+<!-- PHOTO MODAL -->
+<div class="overlay" id="m-photo">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('m-photo')">✕</button>
+    <h3>📷 Ongeza Picha</h3>
+    <p style="font-size:.82rem;color:var(--muted);margin-bottom:.9rem;line-height:1.6">Weka URL ya picha iliyopakiwa online (mfano: Google Drive shared link, Imgur, n.k.)</p>
+    <input class="field" id="p-url"   placeholder="URL ya Picha *"/>
+    <input class="field" id="p-label" placeholder="Maelezo ya Picha (mfano: Orientation Day)"/>
+    <div class="modal-actions">
+      <button class="btn-ok" onclick="addPhoto()">Ongeza</button>
+      <button class="btn-cancel" onclick="closeModal('m-photo')">Ghairi</button>
+    </div>
+  </div>
+</div>
 
 <script>
-let ADMIN_PASS = "bdba1";
+  // ── PASSWORD ──
+  const PASSWORD = 'BDBA1@2026';
+  let isAdmin = false;
 
-function login(){
-  let p = document.getElementById("pass").value;
-  if(p === ADMIN_PASS){
-    document.getElementById("adminPanel").classList.remove("hidden");
-    document.getElementById("loginSection").classList.add("hidden");
-  } else {
-    document.getElementById("msg").innerText = "Wrong password!";
+  function toggleAdmin() {
+    if (isAdmin) {
+      isAdmin = false;
+      document.body.classList.remove('admin-mode');
+      document.getElementById('admin-btn').classList.remove('active');
+      document.getElementById('admin-btn').textContent = '🔒 Admin';
+      toast('Umetoka nje ya hali ya Admin');
+    } else {
+      openModal('m-password');
+    }
   }
-}
 
-function logout(){
-  location.reload();
-}
+  function checkPassword() {
+    const val = document.getElementById('pw-input').value;
+    const err = document.getElementById('pw-err');
+    if (val === PASSWORD) {
+      isAdmin = true;
+      document.body.classList.add('admin-mode');
+      document.getElementById('admin-btn').classList.add('active');
+      document.getElementById('admin-btn').textContent = '🔓 Admin';
+      err.style.display = 'none';
+      document.getElementById('pw-input').value = '';
+      closeModal('m-password');
+      toast('Umeingia kama Admin ✓');
+    } else {
+      err.style.display = 'block';
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-input').focus();
+    }
+  }
 
-// STORAGE HELPERS
-function getData(key){
-  return JSON.parse(localStorage.getItem(key) || "[]");
-}
-function saveData(key, data){
-  localStorage.setItem(key, JSON.stringify(data));
-}
+  // ── MODALS ──
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+  });
 
-// ADD FUNCTIONS
-function addAnnouncement(){
-  let data = getData("ann");
-  data.push(document.getElementById("annText").value);
-  saveData("ann", data);
-  loadAll();
-}
+  // ── TOAST ──
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
 
-function addDoc(){
-  let data = getData("doc");
-  data.push(document.getElementById("docText").value);
-  saveData("doc", data);
-  loadAll();
-}
-
-function addImg(){
-  let data = getData("img");
-  data.push(document.getElementById("imgText").value);
-  saveData("img", data);
-  loadAll();
-}
-
-function addLink(){
-  let data = getData("links");
-  data.push(document.getElementById("linkText").value);
-  saveData("links", data);
-  loadAll();
-}
-
-// DISPLAY
-function loadAll(){
-
-  document.getElementById("announcements").innerHTML =
-    getData("ann").map(a => `<div class='item'>${a}</div>`).join("");
-
-  document.getElementById("documents").innerHTML =
-    getData("doc").map(d => `<div class='item'>${d}</div>`).join("");
-
-  document.getElementById("gallery").innerHTML =
-    getData("img").map(i => `<img src='${i}' width='100%' style='margin:5px 0;border-radius:10px;'>`).join("");
-
-  document.getElementById("links").innerHTML =
-    getData("links").map(l => `<div class='item'>${l}</div>`).join("");
-}
-
-loadAll();
-</script>
-
-</body>
-  </html>
+  // ── NOTICES ──
+  let notices = [];
+  function addNotice() {
+    const title = document.getElementById('n-title').value.trim();
+    const meta  = document.getElementById('n-meta').value.trim();
+    const type  = document.getElementById('n-type').value;
+    if (!title) { alert('Weka kichwa cha taarifa.'); return; }
+    const id = Date.now();
+    notices.unshift({ id, title, meta, type });
+    renderNotices();
+    ['n-title','n-meta'].forEach(x => document.getElementById(x).value = '');
+    document.getElementById('n-type').value = 'normal';
+    closeModal('m-notice');
+    toas
