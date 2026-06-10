@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BDBA 1 Portal 2026</title>
+  <style>
+    body { font-family: Arial; margin:0; background:#f2f2f2; }
+    header { background:#003366; color:white; padding:15px; text-align:center; }
+    section { background:white; margin:15px; padding:15px; border-radius:10px; }
+    h2 { color:#003366; }
+
+    input, button {
+      padding:10px;
+      margin:5px 0;
+      width:100%;
+    }
+
+    button {
+      background:#003366;
+      color:white;
+      border:none;
+      cursor:pointer;
+    }
+
+    .hidden { display:none; }
+
+    .item {
+      background:#eee;
+      padding:10px;
+      margin:5px 0;
+      border-radius:5px;
+    }
+
+    a { color:#003366; }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>BDBA 1 2026 Portal</h1>
+  <p>Information • Documents • Gallery • Links</p>
+</header>
+
+<!-- LOGIN -->
+<section id="loginSection">
+  <h2>🔐 Admin Login</h2>
+  <input type="password" id="pass" placeholder="Enter password">
+  <button onclick="login()">Login</button>
+  <p id="msg"></p>
+</section>
+
+<!-- ADMIN PANEL -->
+<section id="adminPanel" class="hidden">
+  <h2>⚙️ Admin Panel</h2>
+
+  <h3>➕ Add Announcement</h3>
+  <input id="annText" placeholder="Enter announcement">
+  <button onclick="addAnnouncement()">Add</button>
+
+  <h3>📄 Add Document Link</h3>
+  <input id="docText" placeholder="Document name + link">
+  <button onclick="addDoc()">Add</button>
+
+  <h3>🖼️ Add Image Link</h3>
+  <input id="imgText" placeholder="Image URL">
+  <button onclick="addImg()">Add</button>
+
+  <h3>🔗 Add Useful Link</h3>
+  <input id="linkText" placeholder="Name - URL">
+  <button onclick="addLink()">Add</button>
+
+  <button onclick="logout()">Logout</button>
+</section>
+
+<!-- CONTENT -->
+
+<section>
+  <h2>📢 Taarifa</h2>
+  <div id="announcements"></div>
+</section>
+
+<section>
+  <h2>📄 Documents</h2>
+  <div id="documents"></div>
+</section>
+
+<section>
+  <h2>🖼️ Gallery</h2>
+  <div id="gallery"></div>
+</section>
+
+<section>
+  <h2>🔗 Links Muhimu</h2>
+  <div id="links"></div>
+
+  <a href="https://srs.irdp.ac.tz" target="_blank">IRDP SRS Login</a><br>
+  <a href="https://scholar.google.com" target="_blank">Google Scholar</a><br>
+  <a href="https://chat.openai.com" target="_blank">ChatGPT</a>
+</section>
+
+<script>
+let ADMIN_PASS = "bdba1";
+
+function login(){
+  let p = document.getElementById("pass").value;
+  if(p === ADMIN_PASS){
+    document.getElementById("adminPanel").classList.remove("hidden");
+    document.getElementById("loginSection").classList.add("hidden");
+  } else {
+    document.getElementById("msg").innerText = "Wrong password!";
+  }
+}
+
+function logout(){
+  location.reload();
+}
+
+// STORAGE HELPERS
+function getData(key){
+  return JSON.parse(localStorage.getItem(key) || "[]");
+}
+function saveData(key, data){
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
+// ADD FUNCTIONS
+function addAnnouncement(){
+  let data = getData("ann");
+  data.push(document.getElementById("annText").value);
+  saveData("ann", data);
+  loadAll();
+}
+
+function addDoc(){
+  let data = getData("doc");
+  data.push(document.getElementById("docText").value);
+  saveData("doc", data);
+  loadAll();
+}
+
+function addImg(){
+  let data = getData("img");
+  data.push(document.getElementById("imgText").value);
+  saveData("img", data);
+  loadAll();
+}
+
+function addLink(){
+  let data = getData("links");
+  data.push(document.getElementById("linkText").value);
+  saveData("links", data);
+  loadAll();
+}
+
+// DISPLAY
+function loadAll(){
+
+  document.getElementById("announcements").innerHTML =
+    getData("ann").map(a => `<div class='item'>${a}</div>`).join("");
+
+  document.getElementById("documents").innerHTML =
+    getData("doc").map(d => `<div class='item'>${d}</div>`).join("");
+
+  document.getElementById("gallery").innerHTML =
+    getData("img").map(i => `<img src='${i}' width='100%' style='margin:5px 0;border-radius:10px;'>`).join("");
+
+  document.getElementById("links").innerHTML =
+    getData("links").map(l => `<div class='item'>${l}</div>`).join("");
+}
+
+loadAll();
+</script>
+
+</body>
+  </html>
